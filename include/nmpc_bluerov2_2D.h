@@ -30,6 +30,9 @@ struct online_data_struct_
     std::vector<double> distFx;
     std::vector<double> distFy;
     std::vector<double> distFz;
+    std::vector<double> ent_point;
+    std::vector<double> obs_centre;
+    
 };
 
 class NMPC_PC

@@ -243,29 +243,23 @@ void NMPC_PC::set_measurements(struct acado_struct& acadostruct,
     {
         acadostruct.x0[i] = statesmeas.at(i);
     }
+
+
     for (int i = 0; i < acadostruct.acado_N + 1; ++i)
     {
         int ref_idx = 0;
-        //acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFx[i] *  (double(acadostruct.acado_N -i)/acadostruct.acado_N );
-        //acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFy[i] * (double(acadostruct.acado_N -i)/acadostruct.acado_N );
-        //acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFz[i] * (double(acadostruct.acado_N -i)/acadostruct.acado_N );
-        
-        //acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFx[0] *  (double(acadostruct.acado_N -i)/acadostruct.acado_N );
-        //acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFy[0] * (double(acadostruct.acado_N -i)/acadostruct.acado_N );
-        //acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFz[0] * (double(acadostruct.acado_N -i)/acadostruct.acado_N );
-        
-        acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFx[0];
-        acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFy[0] ;
-        acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFz[0] ;
-        //std::cout<<"ACADO online data "<<acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++]<<std::endl;
+        acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFx[i];
+        acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFy[i];
+        acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFz[i];
+        for (int idx = 0; idx < 3; idx++)
+        {
+            acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.ent_point.at(idx);
+        }
+        for (int idx = 3; idx < 6; idx++)
+        {
+            acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.obs_centre.at(idx-3);
+        }
 
-
-        //for (int idx = 0; idx < statesmeas.size() - acadostruct.acado_NX; idx++)
-       // {
-       //     acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = statesmeas.at(acadostruct.acado_NX + idx);
-        //}
-  
-   
     }
 
     // Recompute U_ref based on new disturbance estimates

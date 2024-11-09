@@ -56,8 +56,14 @@ double tether_end_x = 0.0;
 double tether_end_y = 0.0;
 double base_x = 0.0;
 double base_y =0.0;
-std::vector<double> ent_point= {0.0, 0.0};
+//std::vector<double> ent_point= {0.0, 0.0};
 std::vector<double> base_pos = {0.0, 0.0};
+
+
+//NMPC cost
+std::vector<double> ent_point= {0.0, 0.0, 0.0};
+std::vector<double> obs_centre= {0.0, 0.0, 0.0};
+
 
 
 
@@ -715,6 +721,7 @@ int main(int argc, char **argv)
     ros::param::get("W_w", nmpc_struct.W(w_idx++));
     ros::param::get("W_psi", nmpc_struct.W(w_idx++));
     ros::param::get("W_r", nmpc_struct.W(w_idx++));
+    ros::param::get("W_e", nmpc_struct.W(w_idx++));
     ros::param::get("W_Fx", nmpc_struct.W(w_idx++));
     ros::param::get("W_Fy", nmpc_struct.W(w_idx++));
     ros::param::get("W_Fz", nmpc_struct.W(w_idx++));
@@ -788,7 +795,15 @@ int main(int argc, char **argv)
                               current_vel_rate.at(1),
                               current_vel_rate.at(2),
                               angles.at(2),
-                              current_vel_rate.at(5)};
+                              current_vel_rate.at(5),
+                              ent_point[0],
+                              ent_point[1],
+                              ent_point[2],
+                              obs_centre[0],
+                              obs_centre[1],
+                              obs_centre[2]
+        
+                              };
 
             current_ref_x = ref_traj_x[count_traj];
             current_ref_y = ref_traj_y[count_traj];
@@ -805,8 +820,10 @@ int main(int argc, char **argv)
                               0.0, // u
                               0.0, // v
                               0.0, // w
-                              0.0,
-                              0.0};
+                              0.0,  //psi
+                              0.0,  //r
+                              0.0   //e cost
+                              };
 
             std::cout << "current_states = ";
             for (int idx = 0; idx < current_states.size(); idx++)
@@ -837,6 +854,9 @@ int main(int argc, char **argv)
 
             online_data.distFx.resize(NMPC_N + 1);
             online_data.distFy.resize(NMPC_N + 1);
+
+            online_data.ent_point.resize(3);
+            online_data.obs_centre.resize(3);
 
             std::fill(online_data.distFx.begin(), online_data.distFx.end(), distx);
             std::fill(online_data.distFy.begin(), online_data.distFy.end(), disty);
@@ -884,6 +904,12 @@ int main(int argc, char **argv)
 
 
             }
+
+            online_data.ent_point.at(0) = ent_point[0];
+            online_data.ent_point.at(1) = ent_point[1];
+
+
+
             std::cout<< "rov_position x: " << rov_position[0];
             std::cout<< "rov_position y: " << rov_position[1];
             publishPathPoints(ent_point);
