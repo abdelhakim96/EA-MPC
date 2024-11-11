@@ -46,6 +46,7 @@ ros::Subscriber neptuneTether_sub;
 ros::Subscriber obstacles_sub;
 ros::Subscriber neptune_state_sub;
 ros::Subscriber neptune_trajectory_sub;
+ros::Subscriber neptune_goal_sub;
 
 // Publishers
 ros::Publisher att_throttle_pub;
@@ -60,8 +61,7 @@ ros::Publisher s_sdot_pub;
 ros::Publisher nmpc_pred_traj_pub;
 ros::Publisher odom_point_pub;
 ros::Publisher path_pub;
-
-
+ros::Publisher pred_traj_viz_pub;
 nmpc_struct_ nmpc_struct;
 online_data_struct_ online_data;
 

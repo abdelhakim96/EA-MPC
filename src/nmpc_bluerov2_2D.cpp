@@ -219,6 +219,8 @@ void NMPC_PC::nmpc_core(struct nmpc_struct_& _nmpc_inp_struct,
     commandstruct.control_wrench_vec[1] = acadostruct.u[1];
     commandstruct.control_wrench_vec[2] = acadostruct.u[2];
     commandstruct.control_wrench_vec[3]=  acadostruct.u[3];
+        //commandstruct.control_wrench_vec[3]=  acadostruct.u[3];
+
     commandstruct.kkt_tol = acadostruct.getKKT();
     commandstruct.obj_val = acadostruct.getObjective();
 
@@ -248,9 +250,9 @@ void NMPC_PC::set_measurements(struct acado_struct& acadostruct,
     for (int i = 0; i < acadostruct.acado_N + 1; ++i)
     {
         int ref_idx = 0;
-        acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFx[i];
-        acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFy[i];
-        acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFz[i];
+        //acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFx[i];
+        //acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFy[i];
+        //acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.distFz[i];
         for (int idx = 0; idx < 3; idx++)
         {
             acadostruct.od[(i * acadostruct.acado_NOD) + ref_idx++] = online_data.ent_point.at(idx);

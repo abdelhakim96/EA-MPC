@@ -34,6 +34,9 @@ std::vector<double> neptune_planner_x;
 std::vector<double> neptune_planner_y;
 std::vector<double> neptune_planner_z;
 
+geometry_msgs::Point neptune_goal;
+
+
 int size_refs = 10;
 int neptune_planner_size = 10;
 
@@ -65,6 +68,11 @@ std::vector<double> ent_point= {0.0, 0.0, 0.0};
 std::vector<double> obs_centre= {0.0, 0.0, 0.0};
 
 
+
+void neptuneGoalCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {
+    // Save the point data to neptune_goal
+    neptune_goal = msg->point;
+}
 
 
 
@@ -172,7 +180,7 @@ geometry_msgs::Point *getFirstContactPoint(const std::vector<geometry_msgs::Poin
         if (pointCount[key] == 2)
         {
             // Print the contact point
-            std::cout << "First contact point found: (" << point.x << ", " << point.y << ", " << point.z << ")" << std::endl;
+           // std::cout << "First contact point found: (" << point.x << ", " << point.y << ", " << point.z << ")" << std::endl;
             return new geometry_msgs::Point(point); // Dynamically allocate to return a pointer
         }
     }
@@ -615,23 +623,35 @@ void NMPC_PC::publish_wrench(struct command_struct &commandstruct)
     nmpc_cmd_obj_pub.publish(obj_val_msg);
 }
 
-void NMPC_PC::publish_pred_tarjectory(struct acado_struct &traj_struct)
+void NMPC_PC::publish_pred_trajectory(struct acado_struct &traj_struct)
 {
-    // Create an instance of the Float32MultiArray message type
-    std_msgs::Float64MultiArray pred_traj_msg;
+    // Create an instance of the Path message type (new topic)
+    nav_msgs::Path pred_traj_viz_msg;
 
-    // Resize the data array based on the size of nmpc_pc->nmpc_struct.x
-    pred_traj_msg.data.resize(NMPC_NX * (NMPC_N + 1));
+    // Set the frame_id for the path (use your frame of reference, e.g., "map")
+    pred_traj_viz_msg.header.frame_id = "world";  
+    pred_traj_viz_msg.header.stamp = ros::Time::now();  // Timestamp the path
 
-    for (int i = 0; i < NMPC_NX * (NMPC_N + 1); ++i)
-    {
-        // pred_traj_msg.data[i] = traj_struct.x[i];
-        pred_traj_msg.data[i] = nmpc_struct.x[0 + 9];
+    // Populate the Path message with the trajectory data
+    for (int i = 0; i < NMPC_N * NMPC_NX; i += NMPC_NX) {
+        geometry_msgs::PoseStamped pose;
+        pose.header.frame_id = "world";
+        pose.header.stamp = ros::Time::now();  // Timestamp for each pose
+
+        // Assuming `nmpc_struct.x` contains the state data as [x, y, z] every 3 elements
+        pose.pose.position.x = nmpc_struct.x[i + 0];  // x position
+        pose.pose.position.y = nmpc_struct.x[i + 1];  // y position
+        pose.pose.position.z = nmpc_struct.x[i + 2];  // z position
+
+        // Optionally, set orientation, assuming default (no rotation)
+        pose.pose.orientation.w = 1.0;  // Identity quaternion (no rotation)
+
+        // Add this pose to the path
+        pred_traj_viz_msg.poses.push_back(pose);
     }
 
-    nmpc_pred_traj_pub.publish(pred_traj_msg);
-
-    // a = nmpc_pc->nmpc_struct.x[0+9] <<endl;
+    // Publish the trajectory path for visualization
+    pred_traj_viz_pub.publish(pred_traj_viz_msg);
 }
 
 int main(int argc, char **argv)
@@ -674,6 +694,7 @@ int main(int argc, char **argv)
     // neptuneTetherArray_sub = nh.subscribe<visualization_msgs::Marker>("/firefly1/neptune/tether_rough_array", 1, neptuneTetherCallback);
     neptune_state_sub = nh.subscribe("/firefly3/state", 10, neptune_state_cb);
     neptune_trajectory_sub = nh.subscribe("/firefly1/neptune/actual_traj", 10, neptune_trajectory_cb);
+    neptune_goal_sub = nh.subscribe("/firefly1/neptune/point_G", 10, neptuneGoalCallback);
 
     // ----------
     // Publishers
@@ -691,6 +712,7 @@ int main(int argc, char **argv)
 
     path_pub= nh.advertise<visualization_msgs::Marker>("/tether_path/", 10);
 
+    pred_traj_viz_pub = nh.advertise<nav_msgs::Path>("nmpc_predicted_trajectory_viz", 1);
 
 
 
@@ -709,6 +731,7 @@ int main(int argc, char **argv)
     ros::param::get("F_y_ref", nmpc_struct.U_ref(u_idx++));
     ros::param::get("F_z_ref", nmpc_struct.U_ref(u_idx++));
     ros::param::get("Mz_ref", nmpc_struct.U_ref(u_idx++));
+    ros::param::get("slack_ref", nmpc_struct.U_ref(u_idx++));
 
     assert(u_idx == NMPC_NU);
 
@@ -726,6 +749,8 @@ int main(int argc, char **argv)
     ros::param::get("W_Fy", nmpc_struct.W(w_idx++));
     ros::param::get("W_Fz", nmpc_struct.W(w_idx++));
     ros::param::get("W_Mz", nmpc_struct.W(w_idx++));
+    ros::param::get("W_slack", nmpc_struct.W(w_idx++));
+
     assert(w_idx == NMPC_NY);
 
     nmpc_struct.sample_time = sampleTime;
@@ -788,6 +813,17 @@ int main(int argc, char **argv)
 
             // initialize_reference_if_Empty();
 
+
+            const std::string red = "\033[31m";
+            const std::string reset = "\033[0m";
+
+            std::cout << red << "obs centre x: " << reset << closest_obs[0] << std::endl;
+            std::cout << red << "obs centre y: " << reset << closest_obs[1] << std::endl;
+
+            std::cout << red << "rov x: " << reset << current_pos_att.at(0) << std::endl;
+            std::cout << red << "rov y: " << reset << current_pos_att.at(1) << std::endl;
+
+
             current_states = {current_pos_att.at(0),
                               current_pos_att.at(1),
                               current_pos_att.at(2),
@@ -798,24 +834,27 @@ int main(int argc, char **argv)
                               current_vel_rate.at(5),
                               ent_point[0],
                               ent_point[1],
-                              ent_point[2],
+                              0.0,
                               obs_centre[0],
                               obs_centre[1],
-                              obs_centre[2]
-        
+                              0.0,
+                              0.0        
                               };
 
             current_ref_x = ref_traj_x[count_traj];
             current_ref_y = ref_traj_y[count_traj];
             current_ref_z = ref_traj_z[count_traj];
 
+            std::vector<double> rov_position = {tether_end_x  , tether_end_y, 0.0};
+
+
             if (loop_counter % 10 == 0 && count_traj < size_refs - 1)
             {
                 count_traj++;
             }
 
-            ref_trajectory = {0.0, // x
-                              0.0, // y
+            ref_trajectory = {neptune_goal.x, // x
+                              neptune_goal.y, // y
                               0.0, // z
                               0.0, // u
                               0.0, // v
@@ -872,11 +911,11 @@ int main(int argc, char **argv)
 
          //  std::vector<double> rov_position = {current_pos_att.at(0), current_pos_att.at(1), 0.0};
             //std::vector<double> rov_position = {neptune_x, neptune_y, 0.0};
-         std::vector<double> rov_position = {tether_end_x  , tether_end_y, 0.0};
 
             if (!obstacle_centers.empty())
             {
                 closest_obs = findClosestObstacle(contactPoint, rov_position);
+                cout <<"closest obstacles computed:";
             }
 
             if (contactPoint == nullptr)
@@ -893,23 +932,44 @@ int main(int argc, char **argv)
                 ent_point = compute_entanglement_point(rov_position, contact_vector, base_pos);
                 }
                else
-               {ent_point[0] = rov_position[0];
-                ent_point[1] = rov_position[1];
+               {ent_point[0] = neptune_goal.x;
+                ent_point[1] = neptune_goal.y;
+                ent_point[2] = 0.0;
+
                }
                 }
 
             else{
-                ent_point[0] = rov_position[0];
-                ent_point[1] = rov_position[1];
-
+                ent_point[0] = neptune_goal.x;
+                ent_point[1] = neptune_goal.y;
+                ent_point[2] = 0.0;
 
             }
 
+            //assign the entaglement point and obsatcel centre to teh onlien data struct
+
             online_data.ent_point.at(0) = ent_point[0];
             online_data.ent_point.at(1) = ent_point[1];
+            online_data.ent_point.at(2) = 0.0;
 
 
+    // select obsatcle centre of the one in contact
+if (contactPoint != nullptr){
+            online_data.obs_centre.at(0) = contactPoint->x;
+            online_data.obs_centre.at(1) = contactPoint->y;
+            online_data.obs_centre.at(2) = 0.0;
+}
 
+    // otherwise select the closest one
+
+else {
+          //  online_data.obs_centre.at(0) = closest_obs[0];
+          //  online_data.obs_centre.at(1) = closest_obs[1];
+            online_data.obs_centre.at(0) = closest_obs[0];
+            online_data.obs_centre.at(1) = closest_obs[1];
+            online_data.obs_centre.at(2) = 0.0;
+
+}
             std::cout<< "rov_position x: " << rov_position[0];
             std::cout<< "rov_position y: " << rov_position[1];
             publishPathPoints(ent_point);
@@ -936,20 +996,20 @@ int main(int argc, char **argv)
             // std::cout << "predicted dist x "<< online_data.distFx[0]<<endl;
             /// std::cout << "thrust input x1"<< nmpc_pc->nmpc_struct.x[1+9]<<endl;
 
-            nmpc_pc->publish_pred_tarjectory(nmpc_pc->nmpc_struct);
+            nmpc_pc->publish_pred_trajectory(nmpc_pc->nmpc_struct);
             nmpc_pc->publish_wrench(nmpc_pc->nmpc_cmd_struct);
 
             // Create a PointStamped message
-            // geometry_msgs::PointStamped point_msg;
-            //  point_msg.header.stamp = ros::Time::now(); // Set the timestamp
-            //   point_msg.header.frame_id = "world";  // Set to your global frame here
+             geometry_msgs::PointStamped point_msg;
+            point_msg.header.stamp = ros::Time::now(); // Set the timestamp
+               point_msg.header.frame_id = "world";  // Set to your global frame here
 
-            // point_msg.point.x = current_pos_att.at(0);
-            // point_msg.point.y = current_pos_att.at(1);
-            // point_msg.point.z = current_pos_att.at(2);
+             point_msg.point.x = current_pos_att.at(0);
+             point_msg.point.y = current_pos_att.at(1);
+             point_msg.point.z = current_pos_att.at(2);
 
             // Publish the PointStamped message
-            // odom_point_pub.publish(point_msg);
+             odom_point_pub.publish(point_msg);
 
             ros::spinOnce();
             rate.sleep();

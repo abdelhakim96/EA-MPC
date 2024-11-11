@@ -106,7 +106,7 @@ public:
     void publish_wrench(struct command_struct& commandstruct);
 
 
-    void publish_pred_tarjectory(struct  acado_struct& traj_struct);
+    void publish_pred_trajectory(struct  acado_struct& traj_struct);
 
 protected:
     void set_measurements(struct acado_struct& acadostruct,
