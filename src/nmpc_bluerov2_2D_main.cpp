@@ -226,7 +226,9 @@ void updateEntanglementData(
     }
     ent_point_[0]= ent_point[0];
     ent_point_[1]= ent_point[1];
-
+    online_data.ent_point.at(0) = ent_point_[0] - current_pos_att.at(0);
+    online_data.ent_point.at(1) = ent_point_[1] - current_pos_att.at(1);
+    
 
 }
 
@@ -597,6 +599,7 @@ void initializeParams(ros::NodeHandle& nh, nmpc_struct_& nmpc_struct, bool& onli
     ros::param::get("W_w", nmpc_struct.W(w_idx++));
     ros::param::get("W_psi", nmpc_struct.W(w_idx++));
     ros::param::get("W_r", nmpc_struct.W(w_idx++));
+    ros::param::get("W_e", nmpc_struct.W(w_idx++));
     ros::param::get("W_Fx", nmpc_struct.W(w_idx++));
     ros::param::get("W_Fy", nmpc_struct.W(w_idx++));
     ros::param::get("W_Fz", nmpc_struct.W(w_idx++));
@@ -736,11 +739,11 @@ int main(int argc, char **argv)
                               current_vel_rate.at(2),
                               angles.at(2),
                               current_vel_rate.at(5),
-                              1.0,     //ent_point[0],
-                              1.0,      //ent_point[1],
+                              online_data.obs_centre[0],     //ent_point[0],
+                              online_data.obs_centre[1],      //ent_point[1],
                               0.0,
-                              1.0,      //obs_centre[0],
-                              1.0,      //obs_centre[1],
+                              online_data.obs_centre[0],      //obs_centre[0],
+                              online_data.obs_centre[1],      //obs_centre[1],
                               0.0,
                               0.0     //slack variable  
                               } ; 
@@ -783,6 +786,13 @@ int main(int argc, char **argv)
                 std::cout << online_data.obs_centre[idx] << ",";
             }
             std::cout << "\n";
+
+            std::cout << "\033[31mEntanglement vector = ";
+            for (int idx = 0; idx < 2; idx++)
+            {
+                std::cout << online_data.ent_point[idx] << ",";
+            }
+            std::cout << "\033[0m\n";  // Reset color to default
 
 
 

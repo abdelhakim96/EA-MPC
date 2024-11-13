@@ -73,7 +73,7 @@ extern "C"
 /** Number of differential derivative variables. */
 #define NMPC_NXD 0
 /** Number of references/measurements per node on the first N nodes. */
-#define NMPC_NY 13
+#define NMPC_NY 14
 /** Number of references/measurements on the last (N + 1)st node. */
 #define NMPC_NYN 8
 /** Total number of QP optimization variables. */
@@ -119,11 +119,11 @@ real_t u[ 150 ];
  */
 real_t od[ 186 ];
 
-/** Column vector of size: 390
+/** Column vector of size: 420
  * 
- *  Matrix containing 30 reference/measurement vectors of size 13 for first 30 nodes.
+ *  Matrix containing 30 reference/measurement vectors of size 14 for first 30 nodes.
  */
-real_t y[ 390 ];
+real_t y[ 420 ];
 
 /** Column vector of size: 8
  * 
@@ -131,8 +131,8 @@ real_t y[ 390 ];
  */
 real_t yN[ 8 ];
 
-/** Matrix of size: 13 x 13 (row major format) */
-real_t W[ 169 ];
+/** Matrix of size: 14 x 14 (row major format) */
+real_t W[ 196 ];
 
 /** Matrix of size: 8 x 8 (row major format) */
 real_t WN[ 64 ];
@@ -195,8 +195,8 @@ real_t state[ 326 ];
 /** Column vector of size: 450 */
 real_t d[ 450 ];
 
-/** Column vector of size: 390 */
-real_t Dy[ 390 ];
+/** Column vector of size: 420 */
+real_t Dy[ 420 ];
 
 /** Column vector of size: 8 */
 real_t DyN[ 8 ];
@@ -207,23 +207,26 @@ real_t evGx[ 6750 ];
 /** Matrix of size: 450 x 5 (row major format) */
 real_t evGu[ 2250 ];
 
+/** Column vector of size: 21 */
+real_t objAuxVar[ 21 ];
+
 /** Row vector of size: 26 */
 real_t objValueIn[ 26 ];
 
-/** Row vector of size: 13 */
-real_t objValueOut[ 13 ];
+/** Row vector of size: 294 */
+real_t objValueOut[ 294 ];
 
 /** Matrix of size: 450 x 15 (row major format) */
 real_t Q1[ 6750 ];
 
-/** Matrix of size: 450 x 13 (row major format) */
-real_t Q2[ 5850 ];
+/** Matrix of size: 450 x 14 (row major format) */
+real_t Q2[ 6300 ];
 
 /** Matrix of size: 150 x 5 (row major format) */
 real_t R1[ 750 ];
 
-/** Matrix of size: 150 x 13 (row major format) */
-real_t R2[ 1950 ];
+/** Matrix of size: 150 x 14 (row major format) */
+real_t R2[ 2100 ];
 
 /** Matrix of size: 15 x 15 (row major format) */
 real_t QN1[ 225 ];
