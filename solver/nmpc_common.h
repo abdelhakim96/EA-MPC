@@ -73,7 +73,7 @@ extern "C"
 /** Number of differential derivative variables. */
 #define NMPC_NXD 0
 /** Number of references/measurements per node on the first N nodes. */
-#define NMPC_NY 14
+#define NMPC_NY 13
 /** Number of references/measurements on the last (N + 1)st node. */
 #define NMPC_NYN 8
 /** Total number of QP optimization variables. */
@@ -119,11 +119,11 @@ real_t u[ 150 ];
  */
 real_t od[ 186 ];
 
-/** Column vector of size: 420
+/** Column vector of size: 390
  * 
- *  Matrix containing 30 reference/measurement vectors of size 14 for first 30 nodes.
+ *  Matrix containing 30 reference/measurement vectors of size 13 for first 30 nodes.
  */
-real_t y[ 420 ];
+real_t y[ 390 ];
 
 /** Column vector of size: 8
  * 
@@ -131,8 +131,8 @@ real_t y[ 420 ];
  */
 real_t yN[ 8 ];
 
-/** Matrix of size: 14 x 14 (row major format) */
-real_t W[ 196 ];
+/** Matrix of size: 13 x 13 (row major format) */
+real_t W[ 169 ];
 
 /** Matrix of size: 8 x 8 (row major format) */
 real_t WN[ 64 ];
@@ -155,17 +155,17 @@ real_t lbValues[ 150 ];
  */
 real_t ubValues[ 150 ];
 
-/** Column vector of size: 60
+/** Column vector of size: 30
  * 
  *  Lower bounds values for affine constraints.
  */
-real_t lbAValues[ 60 ];
+real_t lbAValues[ 30 ];
 
-/** Column vector of size: 60
+/** Column vector of size: 30
  * 
  *  Upper bounds values for affine constraints.
  */
-real_t ubAValues[ 60 ];
+real_t ubAValues[ 30 ];
 
 
 } NMPCvariables;
@@ -195,8 +195,8 @@ real_t state[ 326 ];
 /** Column vector of size: 450 */
 real_t d[ 450 ];
 
-/** Column vector of size: 420 */
-real_t Dy[ 420 ];
+/** Column vector of size: 390 */
+real_t Dy[ 390 ];
 
 /** Column vector of size: 8 */
 real_t DyN[ 8 ];
@@ -207,26 +207,23 @@ real_t evGx[ 6750 ];
 /** Matrix of size: 450 x 5 (row major format) */
 real_t evGu[ 2250 ];
 
-/** Column vector of size: 3 */
-real_t objAuxVar[ 3 ];
-
 /** Row vector of size: 26 */
 real_t objValueIn[ 26 ];
 
-/** Row vector of size: 224 */
-real_t objValueOut[ 224 ];
+/** Row vector of size: 13 */
+real_t objValueOut[ 13 ];
 
 /** Matrix of size: 450 x 15 (row major format) */
 real_t Q1[ 6750 ];
 
-/** Matrix of size: 450 x 14 (row major format) */
-real_t Q2[ 6300 ];
+/** Matrix of size: 450 x 13 (row major format) */
+real_t Q2[ 5850 ];
 
 /** Matrix of size: 150 x 5 (row major format) */
 real_t R1[ 750 ];
 
-/** Matrix of size: 150 x 14 (row major format) */
-real_t R2[ 2100 ];
+/** Matrix of size: 150 x 13 (row major format) */
+real_t R2[ 1950 ];
 
 /** Matrix of size: 15 x 15 (row major format) */
 real_t QN1[ 225 ];
@@ -234,20 +231,20 @@ real_t QN1[ 225 ];
 /** Matrix of size: 15 x 8 (row major format) */
 real_t QN2[ 120 ];
 
-/** Column vector of size: 5 */
-real_t conAuxVar[ 5 ];
-
 /** Row vector of size: 26 */
 real_t conValueIn[ 26 ];
 
-/** Row vector of size: 16 */
-real_t conValueOut[ 16 ];
+/** Row vector of size: 21 */
+real_t conValueOut[ 21 ];
 
 /** Column vector of size: 30 */
 real_t evH[ 30 ];
 
 /** Matrix of size: 30 x 15 (row major format) */
 real_t evHx[ 450 ];
+
+/** Matrix of size: 30 x 5 (row major format) */
+real_t evHu[ 150 ];
 
 /** Column vector of size: 1 */
 real_t evHxd[ 1 ];
@@ -279,8 +276,8 @@ real_t H10[ 2250 ];
 /** Matrix of size: 165 x 165 (row major format) */
 real_t H[ 27225 ];
 
-/** Matrix of size: 60 x 165 (row major format) */
-real_t A[ 9900 ];
+/** Matrix of size: 30 x 165 (row major format) */
+real_t A[ 4950 ];
 
 /** Column vector of size: 165 */
 real_t g[ 165 ];
@@ -291,17 +288,17 @@ real_t lb[ 165 ];
 /** Column vector of size: 165 */
 real_t ub[ 165 ];
 
-/** Column vector of size: 60 */
-real_t lbA[ 60 ];
+/** Column vector of size: 30 */
+real_t lbA[ 30 ];
 
-/** Column vector of size: 60 */
-real_t ubA[ 60 ];
+/** Column vector of size: 30 */
+real_t ubA[ 30 ];
 
 /** Column vector of size: 165 */
 real_t x[ 165 ];
 
-/** Column vector of size: 225 */
-real_t y[ 225 ];
+/** Column vector of size: 195 */
+real_t y[ 195 ];
 
 
 } NMPCworkspace;
